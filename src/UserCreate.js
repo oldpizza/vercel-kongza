@@ -24,7 +24,7 @@ export default function UserCreate() {
       lastname: data.get("lastname"),
       email: data.get("email"),
       password: data.get("password"),
-      image: "'"+file+"'",
+      image: file.name,
     }
     s3.putObject(
       { Bucket: 'kongza', Key: file.name , Body: file  },

@@ -13,8 +13,16 @@ import TableRow from '@mui/material/TableRow';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import { Link } from "react-router-dom";
 import Avatar from '@mui/material/Avatar';
-const secret = 'react-app-kongza'
 
+var AWS = require('aws-sdk');
+
+const s3  = new AWS.S3({
+  accessKeyId: 'kongza1234',
+  secretAccessKey: 'kongza1234',
+  endpoint: 'http://192.168.10.19:9000',
+  s3ForcePathStyle: true, // needed with minio?
+  signatureVersion: 'v4'
+});
 export default function UserList() {
   const token = localStorage.getItem('token')
   useEffect(() => {
@@ -81,6 +89,32 @@ export default function UserList() {
             )
  
   }
+ 
+
+  const [namefileurl, setPicUrl] = React.useState(null)
+
+  const addminio = image => {
+      console.log('image')
+  }
+  let i = 0;
+  const [dataStream, setdataStream] = useState(null)
+  useEffect(() => {
+    s3.listObjects(
+      {Bucket: 'kongza'}, 
+      (err, dataStream) =>{
+      console.log(dataStream.Contents)
+      setdataStream(dataStream.Contents)
+    });
+  }, [])
+  for (i in dataStream) {
+    console.log(dataStream[i].Key);
+    s3.getObject(
+      {Bucket: 'kongza', Key: dataStream[i].Key}, 
+      (err, dataStream) =>{
+      
+    });
+  }
+
 
   return (
     <Container sx={{ p:2 }} maxWidth="false">    
@@ -114,8 +148,8 @@ export default function UserList() {
               <TableCell align="left">Last name</TableCell>
               <TableCell align="left">email</TableCell>
               <TableCell align="center">password</TableCell>
-              <TableCell align="center">image</TableCell>
               <TableCell align="center">Minio image</TableCell>
+             
               <TableCell align="center">Action</TableCell>
             </TableRow>
           </TableHead>
@@ -123,6 +157,7 @@ export default function UserList() {
           {users.map((user) => (
             
               <TableRow key={user.ID}>
+                
                 <TableCell align="right">{user.id}</TableCell>
                 <TableCell align="left">{user.firstname}</TableCell>
                 <TableCell align="left">{user.lastname}</TableCell>
@@ -130,18 +165,14 @@ export default function UserList() {
                 <TableCell align="left">{user.password}</TableCell>
                 <TableCell align="center">
                   <Box display="flex" justifyContent="center">
-                    <Avatar src={user.image}  onClick={popupimage} />
+                    <Avatar src={'http://192.168.10.19:9000/kongza/'+user.image}  id="imageId" onClick={() => addminio(user.image)}  />
                   </Box>
                 </TableCell>
-                <TableCell align="center">
-                  <Box display="flex" justifyContent="center">
-                    <Avatar src={user.image}  onClick={popupimage} />
-                  </Box>
-                </TableCell>
+
                 <TableCell align="center">
                   <ButtonGroup color="primary" aria-label="outlined primary button group">
                     <Button onClick={() => UpdateUser(user.id)} >Edit</Button>
-                    <Button onClick={() => UserDelete(user.id)}>Del</Button>
+                    <Button onClick={() => UserDelete(user.id)}  >Del</Button>
                   
 
                   </ButtonGroup>
